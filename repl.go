@@ -3,14 +3,16 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/Hamadn/pokedexcli/internal/pokecache"
 	"os"
 	"strings"
+	"time"
 )
 
 type cliCommand struct {
 	name     string
 	desc     string
-	callback func() error
+	callback func(*config) error
 }
 
 func commands() map[string]cliCommand {
@@ -25,6 +27,16 @@ func commands() map[string]cliCommand {
 			desc:     "Prints help",
 			callback: commandHelp,
 		},
+		"map": {
+			name:     "map",
+			desc:     "List all maps",
+			callback: commandMap,
+		},
+		"mapb": {
+			name:     "mapb",
+			desc:     "Move to the previous map",
+			callback: commandMapBack,
+		},
 	}
 	return commands
 }
@@ -36,6 +48,9 @@ func cleanInput(text string) []string {
 }
 
 func startRepl() {
+	cfg := &config{
+		cache: pokecache.NewCache(5 * time.Minute),
+	}
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("Pokedex > ")
@@ -46,9 +61,13 @@ func startRepl() {
 		}
 		switch cmd := words[0]; cmd {
 		case "exit":
-			commandExit()
+			commandExit(cfg)
 		case "help":
-			commandHelp()
+			commandHelp(cfg)
+		case "map":
+			commandMap(cfg)
+		case "mapb":
+			commandMapBack(cfg)
 		default:
 			fmt.Println("Unknown command")
 		}
