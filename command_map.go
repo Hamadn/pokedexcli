@@ -26,7 +26,7 @@ type mapItem struct {
 	Prev string `json:"previous"`
 }
 
-func commandMap(c *config) error {
+func commandMap(c *config, location string) error {
 	url := c.nextUrl
 	if url == "" {
 		url = "https://pokeapi.co/api/v2/location-area"
@@ -72,10 +72,10 @@ func commandMap(c *config) error {
 	return nil
 }
 
-func commandMapBack(c *config) error {
+func commandMapBack(c *config, location string) error {
 	if c.prevUrl == "" {
 		c.prevUrl = "https://pokeapi.co/api/v2/location-area"
 	}
 	c.nextUrl = c.prevUrl
-	return commandMap(c)
+	return commandMap(c, location)
 }

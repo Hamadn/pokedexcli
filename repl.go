@@ -12,7 +12,7 @@ import (
 type cliCommand struct {
 	name     string
 	desc     string
-	callback func(*config) error
+	callback func(c *config, location string) error
 }
 
 func commands() map[string]cliCommand {
@@ -37,6 +37,11 @@ func commands() map[string]cliCommand {
 			desc:     "Move to the previous map",
 			callback: commandMapBack,
 		},
+		"explore": {
+			name:     "explore",
+			desc:     "Explore a location",
+			callback: commandExplore,
+		},
 	}
 	return commands
 }
@@ -59,17 +64,19 @@ func startRepl() {
 		if len(words) == 0 {
 			continue
 		}
-		switch cmd := words[0]; cmd {
-		case "exit":
-			commandExit(cfg)
-		case "help":
-			commandHelp(cfg)
-		case "map":
-			commandMap(cfg)
-		case "mapb":
-			commandMapBack(cfg)
-		default:
+
+		cmd, ok := commands()[words[0]]
+		if !ok {
 			fmt.Println("Unknown command")
+			continue
+		}
+		location := ""
+		if len(words) > 1 {
+			location = words[1]
+		}
+		err := cmd.callback(cfg, location)
+		if err != nil {
+			fmt.Println(err)
 		}
 	}
 }
