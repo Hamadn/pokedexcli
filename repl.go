@@ -42,6 +42,11 @@ func commands() map[string]cliCommand {
 			desc:     "Explore a location",
 			callback: commandExplore,
 		},
+		"catch": {
+			name:     "catch",
+			desc:     "Catch a pokemon",
+			callback: commandCatch,
+		},
 	}
 	return commands
 }
@@ -54,7 +59,8 @@ func cleanInput(text string) []string {
 
 func startRepl() {
 	cfg := &config{
-		cache: pokecache.NewCache(5 * time.Minute),
+		cache:   pokecache.NewCache(5 * time.Minute),
+		Pokedex: make(map[string]Pokemon),
 	}
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
