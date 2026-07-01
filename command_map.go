@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Hamadn/pokedexcli/internal/pokecache"
-	"io"
-	"net/http"
 )
 
 type config struct {
 	nextUrl string
 	prevUrl string
 	cache   *pokecache.Cache
+	Pokedex map[string]Pokemon
 }
 
 type locationArea struct {
@@ -33,33 +32,19 @@ func commandMap(c *config, location string) error {
 	}
 
 	data, ok := c.cache.Get(url)
+	var err error
+
+	if !ok {
+		data, err = fetchJSON(url)
+		if err != nil {
+			return err
+		}
+		c.cache.Add(url, data)
+	}
 	var maps locationArea
-
-	if ok {
-		err := json.Unmarshal(data, &maps)
-		if err != nil {
-			return err
-		}
-	} else {
-		res, err := http.Get(url)
-		if err != nil {
-			return err
-		}
-
-		defer res.Body.Close()
-
-		jsonData, err := io.ReadAll(res.Body)
-		if err != nil {
-			return err
-		}
-
-		c.cache.Add(url, jsonData)
-
-		err = json.Unmarshal(jsonData, &maps)
-		if err != nil {
-			return err
-		}
-
+	err = json.Unmarshal(data, &maps)
+	if err != nil {
+		return err
 	}
 
 	c.nextUrl = maps.Next
@@ -74,7 +59,7 @@ func commandMap(c *config, location string) error {
 
 func commandMapBack(c *config, location string) error {
 	if c.prevUrl == "" {
-		c.prevUrl = "https://pokeapi.co/api/v2/location-area"
+		return fmt.Errorf("you are on the first page")
 	}
 	c.nextUrl = c.prevUrl
 	return commandMap(c, location)

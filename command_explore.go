@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 )
 
 type pokemonEncounters struct {
@@ -22,32 +20,19 @@ func commandExplore(c *config, location string) error {
 	}
 
 	data, ok := c.cache.Get(url)
+	var err error
+
+	if !ok {
+		data, err = fetchJSON(url)
+		if err != nil {
+			return err
+		}
+		c.cache.Add(url, data)
+	}
 	var pokemon pokemonEncounters
-
-	if ok {
-		err := json.Unmarshal(data, &pokemon)
-		if err != nil {
-			return err
-		}
-	} else {
-		res, err := http.Get(url)
-		if err != nil {
-			return err
-		}
-
-		defer res.Body.Close()
-
-		jsonData, err := io.ReadAll(res.Body)
-		if err != nil {
-			return err
-		}
-
-		c.cache.Add(url, jsonData)
-
-		err = json.Unmarshal(jsonData, &pokemon)
-		if err != nil {
-			return err
-		}
+	err = json.Unmarshal(data, &pokemon)
+	if err != nil {
+		return err
 	}
 
 	fmt.Println("Found Pokemon:")
