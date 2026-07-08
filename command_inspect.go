@@ -4,7 +4,7 @@ import "fmt"
 
 func commandInspect(c *config, name string) error {
 	if name == "" {
-		return fmt.Errorf("Please provide a pokemon to catch")
+		return fmt.Errorf("Please provide a pokemon to inspect")
 	}
 
 	fmt.Println("Inspecting the Pokedex...")
